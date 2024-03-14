@@ -41,33 +41,37 @@ function objectComparer(obj1, obj2)
     return true;
 }
 
+const request_itineraries = async (url)=>{
+    const options = {method: 'GET'};
+    return fetch(url, options)
+        .then(response => {
+            return response.json(); 
+        })
+        .then(data => {
+            return data;
+        });
+}
 
 
 
 //start original vars
 let itineraries = {value:{}};
 let participants = {value:{}};
+let classifications = {value:{}};
 
 //end original vars
 
 //handle functions
 function handler(url, content, name) {
-    const request_itineraries = async ()=>{
-        const options = {method: 'GET'};
-        return fetch(url, options)
-            .then(response => {
-                return response.json(); 
-            })
-            .then(data => {
-                return data;
-            });
-    }
-
-    request_itineraries().then(response => {
+    request_itineraries(url).then(response => {
         const new_content = response.event
         if (!objectComparer(content.value, new_content))
         {
             content.value = {...new_content}
+            if (name == "#")
+            {
+                return;
+            }
             console.log("broadcasting", name)
             io.timeout(10000).emit(name, content.value);
         }
@@ -76,58 +80,43 @@ function handler(url, content, name) {
     })
 }
 
-
-function handle_itineraries() {
-    const request_itineraries = async ()=>{
-        const url = 'https://rest3.anube.es/rallyrest/timing/api/specials/111.json?itinerary_id=182';
-        const options = {method: 'GET'};
-        return fetch(url, options)
-            .then(response => {
-                return response.json(); 
-            })
-            .then(data => {
-                return data;
-            });
+function handler_classifications()
+{
+    let new_class = {}
+    if(!itineraries.value.data)
+    {
+        //itineraries is empty
+        return
     }
 
-    request_itineraries().then(response => {
-        const new_itineraries = response.event
-        if (!objectComparer(itineraries, new_itineraries))
+    let promises = [];
+    
+    itineraries.value.data.forEach(itinerary => {
+
+        //handler("https://rest3.anube.es/rallyrest/timing/api/classification/111.json?itinerary_id=182&special_id=" + itinerary.id, a, "#")
+        let promise = request_itineraries("https://rest3.anube.es/rallyrest/timing/api/classification/111.json?itinerary_id=182&special_id=" + itinerary.id).then(response => {
+            const new_content = response.event.data.accumulated
+            //console.log(new_content, "new_content")
+            new_class[itinerary.id] = new_content
+            //console.log("\n", new_class[itinerary.id], "\nid: ", itinerary.id, "\n\n\n")
+        }).catch(error => {
+            console.error(error)
+        })
+        promises.push(promise);
+    }  ) 
+    Promise.all(promises)
+        .then(() => {
+        if (!objectComparer(classifications.value, new_class))
         {
-            itineraries = {...new_itineraries}
-            console.log("broadcasting itineraries")
-            io.timeout(10000).emit("itineraries", itineraries);
+            classifications.value = new_class
+            console.log("broadcasting", "classifications")
+            io.timeout(10000).emit("classifications", classifications.value);
         }
-    }).catch(error => {
-        console.error(error)
     })
-}
-
-
-function handle_participants() {
-    const request_participants = async ()=>{
-        const url = 'https://rest3.anube.es/rallyrest/timing/api/participants/111.json';
-        const options = {method: 'GET'};
-        return fetch(url, options)
-            .then(response => {
-                return response.json(); 
-            })
-            .then(data => {
-                return data;
-            });
-    }
-
-    request_participants().then(response => {
-        const new_participants = response.event
-        if (!objectComparer(participants, new_participants))
-        {
-            participants = {...new_participants}
-            console.log("broadcasting participants")
-            io.timeout(10000).emit("participants", participants);
-        }
-    }).catch(error => {
-        console.error(error)
-    })
+    .catch(error => {
+        console.error(error);
+    });
+   
 }
 
 //end of handle functions
@@ -138,7 +127,7 @@ function handle_participants() {
 //setInterval(handle_participants, 5000)
 setInterval(()=>handler("https://rest3.anube.es/rallyrest/timing/api/participants/111.json", participants, "participants"), 5000)
 setInterval(()=>handler("https://rest3.anube.es/rallyrest/timing/api/specials/111.json?itinerary_id=182", itineraries, "itineraries"), 5000)
-
+setInterval(handler_classifications, 5000)
 
 //end of calls
 
