@@ -45,11 +45,37 @@ function objectComparer(obj1, obj2)
 
 
 //start original vars
-let itineraries = {};
+let itineraries = {value:{}};
+let participants = {value:{}};
 
 //end original vars
 
 //handle functions
+function handler(url, content, name) {
+    const request_itineraries = async ()=>{
+        const options = {method: 'GET'};
+        return fetch(url, options)
+            .then(response => {
+                return response.json(); 
+            })
+            .then(data => {
+                return data;
+            });
+    }
+
+    request_itineraries().then(response => {
+        const new_content = response.event
+        if (!objectComparer(content.value, new_content))
+        {
+            content.value = {...new_content}
+            console.log("broadcasting", name)
+            io.timeout(10000).emit(name, content.value);
+        }
+    }).catch(error => {
+        console.error(error)
+    })
+}
+
 
 function handle_itineraries() {
     const request_itineraries = async ()=>{
@@ -77,11 +103,42 @@ function handle_itineraries() {
     })
 }
 
+
+function handle_participants() {
+    const request_participants = async ()=>{
+        const url = 'https://rest3.anube.es/rallyrest/timing/api/participants/111.json';
+        const options = {method: 'GET'};
+        return fetch(url, options)
+            .then(response => {
+                return response.json(); 
+            })
+            .then(data => {
+                return data;
+            });
+    }
+
+    request_participants().then(response => {
+        const new_participants = response.event
+        if (!objectComparer(participants, new_participants))
+        {
+            participants = {...new_participants}
+            console.log("broadcasting participants")
+            io.timeout(10000).emit("participants", participants);
+        }
+    }).catch(error => {
+        console.error(error)
+    })
+}
+
 //end of handle functions
 
 //set interval of handle functions
 
-setInterval(handle_itineraries, 5000)
+//setInterval(handle_itineraries, 5000)
+//setInterval(handle_participants, 5000)
+setInterval(()=>handler("https://rest3.anube.es/rallyrest/timing/api/participants/111.json", participants, "participants"), 5000)
+setInterval(()=>handler("https://rest3.anube.es/rallyrest/timing/api/specials/111.json?itinerary_id=182", itineraries, "itineraries"), 5000)
+
 
 //end of calls
 
