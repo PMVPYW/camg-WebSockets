@@ -138,7 +138,9 @@ io.on("connection", (socket) => {
   * código dos sockets aqui.
   * socket.on(...)
   */
-
+  	socket.emit("participants", participants.value);
+  	socket.emit("itineraries", itineraries.value);
+	socket.emit("classifications", classifications.value);
 });
 
 //end of socket handling (when first connected)
