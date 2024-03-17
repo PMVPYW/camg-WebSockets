@@ -141,6 +141,10 @@ io.on("connection", (socket) => {
   	socket.emit("participants", participants.value);
   	socket.emit("itineraries", itineraries.value);
 	socket.emit("classifications", classifications.value);
+	
+	socket.on("participants", ()=>{socket.emit("participants", participants.value);});
+  	socket.on("itineraries", ()=>{socket.emit("itineraries", itineraries.value)});
+	socket.on("classifications", ()=>{socket.emit("classifications", classifications.value)});
 });
 
 //end of socket handling (when first connected)
