@@ -145,6 +145,18 @@ io.on("connection", (socket) => {
 	socket.on("participants", ()=>{socket.emit("participants", participants.value);});
   	socket.on("itineraries", ()=>{socket.emit("itineraries", itineraries.value)});
 	socket.on("classifications", ()=>{socket.emit("classifications", classifications.value)});
-});
+
 
 //end of socket handling (when first connected)
+
+//handle crud actions
+
+	socket.on("create_rally", function (rally) {
+		socket.broadcast.emit("create_rally", rally);
+	});
+	
+	socket.on("update_rally", function (rally) {
+		socket.broadcast.emit("update_rally", rally);
+	});
+
+});
