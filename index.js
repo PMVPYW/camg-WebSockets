@@ -154,9 +154,11 @@ io.on("connection", (socket) => {
 	socket.on("create_rally", function (rally) {
 		socket.broadcast.emit("create_rally", rally);
 	});
-	
 	socket.on("update_rally", function (rally) {
 		socket.broadcast.emit("update_rally", rally);
+	});
+	socket.on("delete_rally", function (rally) {
+		socket.broadcast.emit("delete_rally", rally);
 	});
 
 });
