@@ -150,7 +150,7 @@ io.on("connection", (socket) => {
 //end of socket handling (when first connected)
 
 //handle crud actions
-
+//rally
 	socket.on("create_rally", function (rally) {
 		socket.broadcast.emit("create_rally", rally);
 	});
@@ -160,5 +160,19 @@ io.on("connection", (socket) => {
 	socket.on("delete_rally", function (rally) {
 		socket.broadcast.emit("delete_rally", rally);
 	});
+
+//patrocinio
+    socket.on("associar_patrocinio", function (patrocinio) {
+        socket.broadcast.emit("associar_patrocinio", patrocinio);
+    });
+    socket.on("desassociar_patrocinio", function (patrocinio) {
+        socket.broadcast.emit("desassociar_patrocinio", patrocinio);
+    });
+    socket.on("delete_entidade", () => {
+        socket.broadcast.emit("delete_entidade");
+    });
+    socket.on("update_entidade", function (entidade){
+        socket.broadcast.emit("update_entidade", entidade);
+    });
 
 });
