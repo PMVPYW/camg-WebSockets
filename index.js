@@ -170,5 +170,16 @@ io.on("connection", (socket) => {
 	socket.on("delete_album", function (album) {
 		socket.broadcast.emit("delete_album", album);
 	});
+	
+	socket.on("create_foto", function (album_id, foto) {
+		socket.broadcast.emit("create_foto", album_id, foto);
+	});
+	socket.on("update_foto", function (album_id, foto) {
+		socket.broadcast.emit("update_foto", album_id, foto);
+	});
+	socket.on("delete_foto", function (album_id, foto) {
+		socket.broadcast.emit("delete_foto", album_id, foto);
+	});
+
 
 });
