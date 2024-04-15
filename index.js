@@ -160,5 +160,15 @@ io.on("connection", (socket) => {
 	socket.on("delete_rally", function (rally) {
 		socket.broadcast.emit("delete_rally", rally);
 	});
+	
+	socket.on("create_album", function (album) {
+		socket.broadcast.emit("create_album", album);
+	});
+	socket.on("update_album", function (album) {
+		socket.broadcast.emit("update_album", album);
+	});
+	socket.on("delete_album", function (album) {
+		socket.broadcast.emit("delete_album", album);
+	});
 
 });
