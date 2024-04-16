@@ -171,8 +171,11 @@ io.on("connection", (socket) => {
     socket.on("delete_entidade", () => {
         socket.broadcast.emit("delete_entidade");
     });
-    socket.on("update_entidade", function (entidade){
-        socket.broadcast.emit("update_entidade", entidade);
+    socket.on("create_entidade", function (entidade, patrocinio){
+        socket.broadcast.emit("create_entidade", entidade, patrocinio);
+    });
+    socket.on("update_entidade", function (entidade, patrocinio){
+        socket.broadcast.emit("update_entidade", entidade, patrocinio);
     });
 
 });
