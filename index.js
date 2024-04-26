@@ -199,4 +199,17 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("update_entidade", entidade, patrocinio);
     });
 
+//admins
+	socket.on("admin_registado", function (admin) {
+        socket.broadcast.emit("admin_registado", admin);
+    });
+	socket.on("admin_eliminado", function (admin_id) {
+        socket.broadcast.emit("admin_eliminado", admin_id);
+    });
+    socket.on("admin_autorizado", function (admin) {
+        socket.broadcast.emit("admin_autorizado", admin);
+    });
+    socket.on("admin_bloqueado_desbloquado", function (admin) {
+        socket.broadcast.emit("admin_bloqueado_desbloquado", admin);
+    });
 });
