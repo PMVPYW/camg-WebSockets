@@ -182,7 +182,7 @@ io.on("connection", (socket) => {
 	});
 
 
-//patrocinio
+//Patrocinio
     socket.on("associar_patrocinio", function (patrocinio) {
         socket.broadcast.emit("associar_patrocinio", patrocinio);
     });
@@ -212,4 +212,17 @@ io.on("connection", (socket) => {
     socket.on("admin_bloqueado_desbloquado", function (admin) {
         socket.broadcast.emit("admin_bloqueado_desbloquado", admin);
     });
+//Noticia
+    socket.on("create_noticia", function (noticia) {
+        socket.broadcast.emit("create_noticia", noticia);
+    });
+
+    socket.on("delete_noticia", function (noticia){
+        socket.broadcast.emit("delete_noticia", noticia);
+    });
+
+    socket.on("update_noticia", function (noticia){
+        socket.broadcast.emit("update_noticia", noticia);
+    });
+
 });
