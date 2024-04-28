@@ -238,5 +238,18 @@ io.on("connection", (socket) => {
     socket.on("update_contacto", function (contacto){
         socket.broadcast.emit("update_contacto", contacto);
     });
+    
+//Tipo de Contactos
+    socket.on("create_tipocontacto", function (tipocontacto) {
+        socket.broadcast.emit("create_tipocontacto", tipocontacto);
+    });
+
+    socket.on("delete_tipocontacto", function (tipocontacto){
+        socket.broadcast.emit("delete_tipocontacto", tipocontacto);
+    });
+
+    socket.on("update_tipocontacto", function (tipocontacto){
+        socket.broadcast.emit("update_tipocontacto", tipocontacto);
+    });
 
 });
