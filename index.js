@@ -212,6 +212,7 @@ io.on("connection", (socket) => {
     socket.on("admin_bloqueado_desbloquado", function (admin) {
         socket.broadcast.emit("admin_bloqueado_desbloquado", admin);
     });
+
 //Noticia
     socket.on("create_noticia", function (noticia) {
         socket.broadcast.emit("create_noticia", noticia);
@@ -223,6 +224,32 @@ io.on("connection", (socket) => {
 
     socket.on("update_noticia", function (noticia){
         socket.broadcast.emit("update_noticia", noticia);
+    });
+
+//Contactos
+    socket.on("create_contacto", function (contacto) {
+        socket.broadcast.emit("create_contacto", contacto);
+    });
+
+    socket.on("delete_contacto", function (contacto){
+        socket.broadcast.emit("delete_contacto", contacto);
+    });
+
+    socket.on("update_contacto", function (contacto){
+        socket.broadcast.emit("update_contacto", contacto);
+    });
+    
+//Tipo de Contactos
+    socket.on("create_tipocontacto", function (tipocontacto) {
+        socket.broadcast.emit("create_tipocontacto", tipocontacto);
+    });
+
+    socket.on("delete_tipocontacto", function (tipocontacto){
+        socket.broadcast.emit("delete_tipocontacto", tipocontacto);
+    });
+
+    socket.on("update_tipocontacto", function (tipocontacto){
+        socket.broadcast.emit("update_tipocontacto", tipocontacto);
     });
 
 });
