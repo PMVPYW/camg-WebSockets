@@ -212,6 +212,9 @@ io.on("connection", (socket) => {
     socket.on("admin_bloqueado_desbloquado", function (admin) {
         socket.broadcast.emit("admin_bloqueado_desbloquado", admin);
     });
+    socket.on("admin_atualizado", function (admin) {
+        socket.broadcast.emit("admin_atualizado", admin);
+    });
 
 //Noticia
     socket.on("create_noticia", function (noticia) {
