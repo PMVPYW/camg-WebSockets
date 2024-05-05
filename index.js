@@ -1,5 +1,5 @@
 //default config
-
+const api_url = "http://34.163.94.122/api/";
 const httpServer = require("http").createServer();
 const io = require("socket.io")(httpServer, {
   cors: {
@@ -12,6 +12,17 @@ httpServer.listen(8080, () => {
   console.log("listening on *:8080");
 });
 //end default config
+
+var rallyes = [];
+
+fetch(api_url + "rally").then(response => {
+            return response.json(); 
+        })
+        .then(data => {
+            rallyes = data.data;
+        }).catch(error=> {
+        	console.error("error");
+        });
 function objectComparer(obj1, obj2)
 {
     const keys1 = Object.keys(obj1 ?? {});
@@ -40,7 +51,6 @@ function objectComparer(obj1, obj2)
 
     return true;
 }
-
 const request_itineraries = async (url)=>{
     const options = {method: 'GET'};
     return fetch(url, options)
@@ -151,14 +161,39 @@ io.on("connection", (socket) => {
 
 //handle crud actions
 //rally
+	socket.on("join_rally", function(rally_external_id)
+	{
+		socket.join(`rally_${rally_external_id}`);	
+	});
+	
+	socket.on("leave_all_rooms", function()
+	{
+		const rooms = socket.rooms;
+		rooms.forEach((room) => {
+			socket.leave(room);
+		});
+			
+	});
+
+
 	socket.on("create_rally", function (rally) {
 		socket.broadcast.emit("create_rally", rally);
+		rallyes.push(rally);
+		console.log(rallyes);
 	});
 	socket.on("update_rally", function (rally) {
 		socket.broadcast.emit("update_rally", rally);
+		const index = rallyes.findIndex((item)=>rally.id == item.id);
+		if (index > -1)
+		{
+			rallyes[index] = rally;
+		}
+		console.log(rallyes);
 	});
 	socket.on("delete_rally", function (rally) {
 		socket.broadcast.emit("delete_rally", rally);
+		rallyes = rallyes.filter((item)=>item.id != rally.id);
+		console.log(rallyes);
 	});
 	
 	socket.on("create_album", function (album) {
