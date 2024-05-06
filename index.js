@@ -1,6 +1,8 @@
 //default config
 const api_url = "http://34.163.94.122/api/";
 const httpServer = require("http").createServer();
+const { Server } = require("socket.io");
+const { instrument } = require("@socket.io/admin-ui");
 const io = require("socket.io")(httpServer, {
   cors: {
     origin: "*",
@@ -8,9 +10,16 @@ const io = require("socket.io")(httpServer, {
     credentials: true,
   },
 });
+
+instrument(io, {
+  auth: false,
+  mode: "development",
+});
+
 httpServer.listen(8080, () => {
   console.log("listening on *:8080");
 });
+
 //end default config
 
 var rallyes = [];
@@ -72,7 +81,7 @@ let classifications = {value:{}};
 //end original vars
 
 //handle functions
-function handler(url, content, name) {
+function handler(url, content, name, channel=null) {
     request_itineraries(url).then(response => {
         const new_content = response.event
         if (!objectComparer(content.value, new_content))
@@ -83,7 +92,13 @@ function handler(url, content, name) {
                 return;
             }
             console.log("broadcasting", name)
-            io.timeout(10000).emit(name, content.value);
+            if (channel)
+            {
+            	io.to(channel).emit(name, content);
+            } else {
+            	io.timeout(10000).emit(name, content);
+            }
+            
         }
     }).catch(error => {
         console.error(error)
@@ -129,13 +144,25 @@ function handler_classifications()
    
 }
 
+const handle_rallyes_participants = ()=>{
+	rallyes.forEach((rally) => {
+	if (!participants.value[rally.external_entity_id]?.value)
+	{
+		participants.value[rally.external_entity_id] = {value: null};
+	}
+	console.error(rally.nome + " == " + rally.external_entity_id);
+	handler(`https://rest3.anube.es/rallyrest/timing/api/participants/${rally.external_entity_id}.json`, participants.value[rally.external_entity_id], "participants")
+	});
+	
+}
+
 //end of handle functions
 
 //set interval of handle functions
 
 //setInterval(handle_itineraries, 5000)
 //setInterval(handle_participants, 5000)
-setInterval(()=>handler("https://rest3.anube.es/rallyrest/timing/api/participants/111.json", participants, "participants"), 5000)
+setInterval(handle_rallyes_participants, 5000)
 setInterval(()=>handler("https://rest3.anube.es/rallyrest/timing/api/specials/111.json?itinerary_id=182", itineraries, "itineraries"), 5000)
 setInterval(handler_classifications, 5000)
 
@@ -148,13 +175,22 @@ io.on("connection", (socket) => {
   * código dos sockets aqui.
   * socket.on(...)
   */
-  	socket.emit("participants", participants.value);
-  	socket.emit("itineraries", itineraries.value);
-	socket.emit("classifications", classifications.value);
+  	socket.emit("participants", participants);
+  	socket.emit("itineraries", itineraries);
+	socket.emit("classifications", classifications);
 	
-	socket.on("participants", ()=>{socket.emit("participants", participants.value);});
-  	socket.on("itineraries", ()=>{socket.emit("itineraries", itineraries.value)});
-	socket.on("classifications", ()=>{socket.emit("classifications", classifications.value)});
+	socket.on("participants", ()=>{
+		socket.rooms.forEach((item)=>{
+			console.error(item, "item");
+			if (participants.value[item.replace("rally_", "")])
+			{
+				socket.emit("participants", participants.value[item.replace("rally_", "")].value, item.replace("rally_", ""))
+			}
+		});
+
+	});
+  	socket.on("itineraries", ()=>{socket.emit("itineraries", itineraries)});
+	socket.on("classifications", ()=>{socket.emit("classifications", classifications)});
 
 
 //end of socket handling (when first connected)
@@ -163,7 +199,7 @@ io.on("connection", (socket) => {
 //rally
 	socket.on("join_rally", function(rally_external_id)
 	{
-		socket.join(`rally_${rally_external_id}`);	
+		socket.join(`rally_${rally_external_id}`);
 	});
 	
 	socket.on("leave_all_rooms", function()
@@ -179,7 +215,6 @@ io.on("connection", (socket) => {
 	socket.on("create_rally", function (rally) {
 		socket.broadcast.emit("create_rally", rally);
 		rallyes.push(rally);
-		console.log(rallyes);
 	});
 	socket.on("update_rally", function (rally) {
 		socket.broadcast.emit("update_rally", rally);
@@ -188,12 +223,10 @@ io.on("connection", (socket) => {
 		{
 			rallyes[index] = rally;
 		}
-		console.log(rallyes);
 	});
 	socket.on("delete_rally", function (rally) {
 		socket.broadcast.emit("delete_rally", rally);
 		rallyes = rallyes.filter((item)=>item.id != rally.id);
-		console.log(rallyes);
 	});
 	
 	socket.on("create_album", function (album) {
