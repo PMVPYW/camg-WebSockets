@@ -1,6 +1,8 @@
 //default config
-
+const api_url = "http://34.163.94.122/api/";
 const httpServer = require("http").createServer();
+const { Server } = require("socket.io");
+const { instrument } = require("@socket.io/admin-ui");
 const io = require("socket.io")(httpServer, {
   cors: {
     origin: "*",
@@ -8,10 +10,28 @@ const io = require("socket.io")(httpServer, {
     credentials: true,
   },
 });
+
+instrument(io, {
+  auth: false,
+  mode: "development",
+});
+
 httpServer.listen(8080, () => {
   console.log("listening on *:8080");
 });
+
 //end default config
+
+var rallyes = [];
+
+fetch(api_url + "rally").then(response => {
+            return response.json(); 
+        })
+        .then(data => {
+            rallyes = data.data;
+        }).catch(error=> {
+        	console.error("error");
+        });
 function objectComparer(obj1, obj2)
 {
     const keys1 = Object.keys(obj1 ?? {});
@@ -40,7 +60,6 @@ function objectComparer(obj1, obj2)
 
     return true;
 }
-
 const request_itineraries = async (url)=>{
     const options = {method: 'GET'};
     return fetch(url, options)
@@ -62,7 +81,7 @@ let classifications = {value:{}};
 //end original vars
 
 //handle functions
-function handler(url, content, name) {
+function handler(url, content, name, channel=null) {
     request_itineraries(url).then(response => {
         const new_content = response.event
         if (!objectComparer(content.value, new_content))
@@ -73,7 +92,43 @@ function handler(url, content, name) {
                 return;
             }
             console.log("broadcasting", name)
-            io.timeout(10000).emit(name, content.value);
+            if (channel)
+            {
+            	io.to(channel).emit(name, content);
+            } else {
+            	io.timeout(10000).emit(name, content);
+            }
+            
+        }
+    }).catch(error => {
+        console.error(error)
+    })
+}
+
+function handler_itineraries(url, content, name, channel=null) {
+    request_itineraries(url).then(response => {
+        const new_content = response.event
+        if (!objectComparer(content.value, new_content))
+        {
+            content.value = {...new_content}
+            if (name == "#")
+            {
+                return;
+            }
+            console.log("broadcasting", name)
+            var arr = [];
+            content.value.data.itineraries.forEach((item)=>{
+            	arr = arr.concat([...item.specials])
+            })
+            
+            content.value = [...arr];
+            if (channel)
+            {
+            	io.to(channel).emit(name,arr);
+            } else {
+            	io.timeout(10000).emit(name, arr);
+            }
+            
         }
     }).catch(error => {
         console.error(error)
@@ -82,41 +137,77 @@ function handler(url, content, name) {
 
 function handler_classifications()
 {
-    let new_class = {}
-    if(!itineraries.value.data)
-    {
-        //itineraries is empty
-        return
-    }
+	rallyes.forEach((rally)=>{
+		let new_class = {}
+		if(!itineraries.value[rally.external_entity_id])
+		{
+		   itineraries.value[rally.external_entity_id] = {value: []}
+		}
+		console.log(rally.id, rally.nome, rally.data_inicio)
 
-    let promises = [];
+		let promises = [];
+		console.error("##error##", itineraries.value[rally.external_entity_id]);
+		if(itineraries.value[rally.external_entity_id].value !== null)
+		{
+			itineraries.value[rally.external_entity_id].value.forEach(itinerary => {
+
+				//handler("https://rest3.anube.es/rallyrest/timing/api/classification/111.json?itinerary_id=182&special_id=" + itinerary.id, a, "#")
+				let promise = request_itineraries("https://rest3.anube.es/rallyrest/timing/api/classification/111.json?itinerary_id=182&special_id=" + itinerary.id).then(response => {
+				    const new_content = response.event.data.accumulated
+
+				    new_class[itinerary.id] = new_content
+
+				}).catch(error => {
+				    console.error(error)
+				})
+				promises.push(promise);
+			}  ) 
+			if (!classifications.value[rally.external_entity_id])
+			{
+				classifications.value[rally.external_entity_id] = {value: null}
+			}
+			Promise.all(promises)
+				.then(() => {
+				if (!objectComparer(classifications.value[rally.external_entity_id], new_class))
+				{
+				    classifications.value[rally.external_entity_id].value = new_class
+				    console.log("broadcasting", "classifications")
+				    io.to(`rally_${rally.external_entity_id}`).emit("classifications", classifications.value[rally.external_entity_id].value);
+				}
+			})
+			.catch(error => {
+				console.error(error);
+			});
+		}
+		
+		console.log(classifications.value)
+	});
     
-    itineraries.value.data.forEach(itinerary => {
-
-        //handler("https://rest3.anube.es/rallyrest/timing/api/classification/111.json?itinerary_id=182&special_id=" + itinerary.id, a, "#")
-        let promise = request_itineraries("https://rest3.anube.es/rallyrest/timing/api/classification/111.json?itinerary_id=182&special_id=" + itinerary.id).then(response => {
-            const new_content = response.event.data.accumulated
-            //console.log(new_content, "new_content")
-            new_class[itinerary.id] = new_content
-            //console.log("\n", new_class[itinerary.id], "\nid: ", itinerary.id, "\n\n\n")
-        }).catch(error => {
-            console.error(error)
-        })
-        promises.push(promise);
-    }  ) 
-    Promise.all(promises)
-        .then(() => {
-        if (!objectComparer(classifications.value, new_class))
-        {
-            classifications.value = new_class
-            console.log("broadcasting", "classifications")
-            io.timeout(10000).emit("classifications", classifications.value);
-        }
-    })
-    .catch(error => {
-        console.error(error);
-    });
    
+}
+
+const handle_rallyes_participants = ()=>{
+	rallyes.forEach((rally) => {
+	if (!participants.value[rally.external_entity_id]?.value)
+	{
+		participants.value[rally.external_entity_id] = {value: null};
+	}
+	console.error(rally.nome + " == " + rally.external_entity_id);
+	handler(`https://rest3.anube.es/rallyrest/timing/api/participants/${rally.external_entity_id}.json`, participants.value[rally.external_entity_id], "participants", channel=`rally_${rally.external_entity_id}`)
+	});
+	
+}
+
+const handle_rallyes_itineraries = ()=>{
+	rallyes.forEach((rally) => {
+	if (!itineraries.value[rally.external_entity_id]?.value)
+	{
+		itineraries.value[rally.external_entity_id] = {value: null};
+	}
+	console.error(rally.nome + " == " + rally.external_entity_id);
+	handler_itineraries(`https://rest3.anube.es/rallyrest/timing/api/specials/${rally.external_entity_id}.json`, itineraries.value[rally.external_entity_id], "itineraries", channel=`rally_${rally.external_entity_id}`)
+	});
+	
 }
 
 //end of handle functions
@@ -125,8 +216,8 @@ function handler_classifications()
 
 //setInterval(handle_itineraries, 5000)
 //setInterval(handle_participants, 5000)
-setInterval(()=>handler("https://rest3.anube.es/rallyrest/timing/api/participants/111.json", participants, "participants"), 5000)
-setInterval(()=>handler("https://rest3.anube.es/rallyrest/timing/api/specials/111.json?itinerary_id=182", itineraries, "itineraries"), 5000)
+setInterval(handle_rallyes_participants, 5000)
+setInterval(handle_rallyes_itineraries, 5000)
 setInterval(handler_classifications, 5000)
 
 //end of calls
@@ -138,27 +229,72 @@ io.on("connection", (socket) => {
   * código dos sockets aqui.
   * socket.on(...)
   */
-  	socket.emit("participants", participants.value);
-  	socket.emit("itineraries", itineraries.value);
-	socket.emit("classifications", classifications.value);
+  	socket.emit("participants", participants);
+  	socket.emit("itineraries", itineraries);
+	socket.emit("classifications", classifications);
 	
-	socket.on("participants", ()=>{socket.emit("participants", participants.value);});
-  	socket.on("itineraries", ()=>{socket.emit("itineraries", itineraries.value)});
-	socket.on("classifications", ()=>{socket.emit("classifications", classifications.value)});
+	socket.on("participants", ()=>{
+		socket.rooms.forEach((item)=>{
+			if (participants.value[item.replace("rally_", "")])
+			{
+				socket.emit("participants", participants.value[item.replace("rally_", "")].value, item.replace("rally_", ""))
+			}
+		});
+
+	});
+  	socket.on("itineraries", ()=>{
+  	socket.rooms.forEach((item)=>{
+			if (itineraries.value[item.replace("rally_", "")])
+			{
+				socket.emit("itineraries", itineraries.value[item.replace("rally_", "")].value, item.replace("rally_", ""))
+			}
+		});
+  	});
+	socket.on("classifications", ()=>{
+			socket.rooms.forEach((item)=>{
+			if (classifications.value[item.replace("rally_", "")])
+				{
+					socket.emit("classifications", classifications.value[item.replace("rally_", "")].value, item.replace("rally_", ""))
+				}
+			});
+
+	});
 
 
 //end of socket handling (when first connected)
 
 //handle crud actions
 //rally
+	socket.on("join_rally", function(rally_external_id)
+	{
+		socket.join(`rally_${rally_external_id}`);
+	});
+	
+	socket.on("leave_all_rooms", function()
+	{
+		const rooms = socket.rooms;
+		rooms.forEach((room) => {
+			socket.leave(room);
+		});
+			
+	});
+
+
 	socket.on("create_rally", function (rally) {
 		socket.broadcast.emit("create_rally", rally);
+		rallyes.push(rally);
 	});
 	socket.on("update_rally", function (rally) {
 		socket.broadcast.emit("update_rally", rally);
+		const index = rallyes.findIndex((item)=>rally.id == item.id);
+		if (index > -1)
+		{
+			rallyes[index] = rally;
+		}
 	});
 	socket.on("delete_rally", function (rally) {
 		socket.broadcast.emit("delete_rally", rally);
+		rallyes = rallyes.filter((item)=>item.id != rally.id);
 	});
 	
 	socket.on("create_album", function (album) {
