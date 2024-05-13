@@ -152,7 +152,7 @@ function handler_classifications()
 			itineraries.value[rally.external_entity_id].value.forEach(itinerary => {
 
 				//handler("https://rest3.anube.es/rallyrest/timing/api/classification/111.json?itinerary_id=182&special_id=" + itinerary.id, a, "#")
-				let promise = request_itineraries("https://rest3.anube.es/rallyrest/timing/api/classification/111.json?itinerary_id=182&special_id=" + itinerary.id).then(response => {
+				let promise = request_itineraries(`https://rest3.anube.es/rallyrest/timing/api/classification/${rally.external_entity_id}.json?itinerary_id=182&special_id=` + itinerary.id).then(response => {
 				    const new_content = response.event.data.accumulated
 
 				    new_class[itinerary.id] = new_content
