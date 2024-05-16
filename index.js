@@ -325,6 +325,9 @@ io.on("connection", (socket) => {
     socket.on("desassociar_patrocinio", function (patrocinio) {
         socket.broadcast.emit("desassociar_patrocinio", patrocinio);
     });
+    socket.on("update_patrocinio", function (patrocinio) {
+        socket.broadcast.emit("update_patrocinio", patrocinio);
+    });
     socket.on("delete_entidade", () => {
         socket.broadcast.emit("delete_entidade");
     });
@@ -333,6 +336,26 @@ io.on("connection", (socket) => {
     });
     socket.on("update_entidade", function (entidade, patrocinio){
         socket.broadcast.emit("update_entidade", entidade, patrocinio);
+    });
+
+//Patrocinio Oficial
+    socket.on("associar_patrocinio_oficial", function (patrocinio) {
+        socket.broadcast.emit("associar_patrocinio_oficial", patrocinio);
+    });
+    socket.on("desassociar_patrocinio_oficial", function (patrocinio) {
+        socket.broadcast.emit("desassociar_patrocinio_oficial", patrocinio);
+    });
+    socket.on("update_patrocinio_oficial", function (patrocinio) {
+        socket.broadcast.emit("update_patrocinio_oficial", patrocinio);
+    });
+    socket.on("delete_entidade_oficial", () => {
+        socket.broadcast.emit("delete_entidade_oficial");
+    });
+    socket.on("create_entidade_oficial", function (entidade, patrocinio){
+        socket.broadcast.emit("create_entidade_oficial", entidade, patrocinio);
+    });
+    socket.on("update_entidade_oficial", function (entidade, patrocinio){
+        socket.broadcast.emit("update_entidade_oficial", entidade, patrocinio);
     });
 
 //admins
