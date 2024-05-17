@@ -414,4 +414,17 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("update_tipocontacto", tipocontacto);
     });
 
+//horarios
+    socket.on("create_horario", function (horario) {
+        socket.broadcast.emit("create_horario", horario);
+    });
+
+    socket.on("delete_horario", function (horario){
+        socket.broadcast.emit("delete_horario", horario);
+    });
+
+    socket.on("update_horario", function (horario){
+        socket.broadcast.emit("update_horario", horario);
+    });
+
 });
