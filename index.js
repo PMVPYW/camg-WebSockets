@@ -1,5 +1,5 @@
 //default config
-const api_url = "http://34.163.94.122/api/";
+const api_url = "http://34.155.37.245/api/";
 const httpServer = require("http").createServer();
 const { Server } = require("socket.io");
 const { instrument } = require("@socket.io/admin-ui");
