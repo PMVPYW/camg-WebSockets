@@ -95,6 +95,7 @@ function handler(url, content, name, channel=null) {
             if (channel)
             {
             	io.to(channel).emit(name, content);
+            	io.to("stats").emit(name, content);
             } else {
             	io.timeout(10000).emit(name, content);
             }
@@ -266,6 +267,9 @@ io.on("connection", (socket) => {
 
 //handle crud actions
 //rally
+    socket.on("stats", function(){
+        socket.join("stats");
+    })
 	socket.on("join_rally", function(rally_external_id)
 	{
 		socket.join(`rally_${rally_external_id}`);
@@ -284,6 +288,7 @@ io.on("connection", (socket) => {
 	socket.on("create_rally", function (rally) {
 		socket.broadcast.emit("create_rally", rally);
 		rallyes.push(rally);
+		handle_rallyes_participants();
 	});
 	socket.on("update_rally", function (rally) {
 		socket.broadcast.emit("update_rally", rally);
@@ -296,6 +301,8 @@ io.on("connection", (socket) => {
 	socket.on("delete_rally", function (rally) {
 		socket.broadcast.emit("delete_rally", rally);
 		rallyes = rallyes.filter((item)=>item.id != rally.id);
+		delete participants.value[rally.external_entity_id];
+		io.to("stats").emit("participants", participants)
 	});
 	
 	socket.on("create_album", function (album) {
