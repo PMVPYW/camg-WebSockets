@@ -11,6 +11,11 @@ const io = require("socket.io")(httpServer, {
   },
 });
 
+function getUserCount(room) {
+  const roomData = io.sockets.adapter.rooms.get(room);
+  return roomData ? roomData.size : 0;
+}
+
 instrument(io, {
   auth: false,
   mode: "development",
@@ -269,6 +274,15 @@ io.on("connection", (socket) => {
 //rally
     socket.on("stats", function(){
         socket.join("stats");
+        io.to("stats").emit("clients", getUserCount("app_client"))
+    })
+    socket.on("app_client", function(){
+        socket.join("app_client");
+        socket.on('disconnect', () => {
+            io.to("stats").emit("clients", getUserCount("app_client"))
+        })
+        console.log("user_rooms", getUserCount("app_client"))
+        io.to("stats").emit("clients", getUserCount("app_client"))
     })
 	socket.on("join_rally", function(rally_external_id)
 	{
