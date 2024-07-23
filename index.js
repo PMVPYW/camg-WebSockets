@@ -448,5 +448,17 @@ io.on("connection", (socket) => {
     socket.on("update_horario", function (horario){
         socket.broadcast.emit("update_horario", horario);
     });
+    
+    socket.on("create_conselho_seguranca", function (conselho){
+        socket.broadcast.emit("create_conselho_seguranca", conselho);
+    });
+    
+    socket.on("update_conselho_seguranca", function (conselho){
+        socket.broadcast.emit("update_conselho_seguranca", conselho);
+    });
+    
+    socket.on("delete_conselho_seguranca", function (conselho){
+        socket.broadcast.emit("delete_conselho_seguranca", conselho);
+    });
 
 });
