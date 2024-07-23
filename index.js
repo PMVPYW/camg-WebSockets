@@ -475,5 +475,18 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("delete_declaracao", declaracao);
     });
 
+//História
+    socket.on("create_historia", function (historia){
+        socket.broadcast.emit("create_historia", historia);
+    });
+
+    socket.on("update_historia", function (historia){
+        socket.broadcast.emit("update_historia", historia);
+    });
+
+    socket.on("delete_historia", function (historia){
+        socket.broadcast.emit("delete_historia", historia);
+    });
+
 
 });
