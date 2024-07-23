@@ -499,7 +499,12 @@ io.on("connection", (socket) => {
 
     socket.on("delete_zonaEspetaculo", function (zona){
         socket.broadcast.emit("delete_zonaEspetaculo", zona);
-});
+    });
+
+//Provas
+    socket.on("update_prova", function (prova){
+        socket.broadcast.emit("update_prova", prova);
+    });
 
 
 });
