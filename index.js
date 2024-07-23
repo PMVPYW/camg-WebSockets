@@ -448,7 +448,8 @@ io.on("connection", (socket) => {
     socket.on("update_horario", function (horario){
         socket.broadcast.emit("update_horario", horario);
     });
-    
+
+//Conselhos de Segurança    
     socket.on("create_conselho_seguranca", function (conselho){
         socket.broadcast.emit("create_conselho_seguranca", conselho);
     });
@@ -460,5 +461,19 @@ io.on("connection", (socket) => {
     socket.on("delete_conselho_seguranca", function (conselho){
         socket.broadcast.emit("delete_conselho_seguranca", conselho);
     });
+
+//Declarações
+    socket.on("create_declaracao", function (declaracao){
+        socket.broadcast.emit("create_declaracao", declaracao);
+    });
+    
+    socket.on("update_declaracao", function (declaracao){
+        socket.broadcast.emit("update_declaracao", declaracao);
+    });
+    
+    socket.on("delete_declaracao", function (declaracao){
+        socket.broadcast.emit("delete_declaracao", declaracao);
+    });
+
 
 });
