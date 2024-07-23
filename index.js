@@ -488,5 +488,18 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("delete_historia", historia);
     });
 
+//Zonas de Espetaculo
+    socket.on("create_zonaEspetaculo", function (zona){
+        socket.broadcast.emit("create_zonaEspetaculo", zona);
+    });
+
+    socket.on("update_zonaEspetaculo", function (zona){
+        socket.broadcast.emit("update_zonaEspetaculo", zona);
+    });
+
+    socket.on("delete_zonaEspetaculo", function (zona){
+        socket.broadcast.emit("delete_zonaEspetaculo", zona);
+});
+
 
 });
