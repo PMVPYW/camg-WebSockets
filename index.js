@@ -2,6 +2,7 @@
 const api_url = "http://34.155.37.245/api/";
 const httpServer = require("http").createServer();
 const { Server } = require("socket.io");
+const { GoogleAuth } = require('google-auth-library');
 const { instrument } = require("@socket.io/admin-ui");
 const io = require("socket.io")(httpServer, {
   cors: {
@@ -15,6 +16,41 @@ function getUserCount(room) {
   const roomData = io.sockets.adapter.rooms.get(room);
   return roomData ? roomData.size : 0;
 }
+
+const KEYFILEPATH = 'service_account_file.json';
+const SCOPES = ['https://www.googleapis.com/auth/firebase.messaging'];
+const PROJECT_ID = 'camgapp-92f5e';
+
+async function sendFCMMessage(tokens, not) {
+    const auth = new GoogleAuth({
+        keyFile: KEYFILEPATH,
+        scopes: SCOPES,
+    });
+
+    const accessToken = await auth.getAccessToken();
+
+    const url = `https://fcm.googleapis.com/v1/projects/${PROJECT_ID}/messages:send`;
+    
+    tokens.forEach(tk=>{  
+        fetch(url, {method: "POST", headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+        body: JSON.stringify({
+                "message": {
+                  "token": tk.token,
+                  "notification": {
+                    "title": not.titulo,
+                    "body": not.descricao,
+                  }
+                }
+        })}).then((response)=>{
+            console.log(tk.token, " token", response.status)  
+        })
+              
+    });
+}
+
 
 instrument(io, {
   auth: false,
@@ -460,5 +496,10 @@ io.on("connection", (socket) => {
     socket.on("delete_conselho_seguranca", function (conselho){
         socket.broadcast.emit("delete_conselho_seguranca", conselho);
     });
-
+    
+    //canais notificação
+    socket.on("notify_app_users", function (obj, devices_list){
+        console.log(devices_list.length, "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$\n", obj, devices_list)
+        sendFCMMessage(devices_list, obj);
+});
 });
