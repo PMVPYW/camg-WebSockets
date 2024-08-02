@@ -484,7 +484,8 @@ io.on("connection", (socket) => {
     socket.on("update_horario", function (horario){
         socket.broadcast.emit("update_horario", horario);
     });
-    
+
+//Conselhos de Segurança    
     socket.on("create_conselho_seguranca", function (conselho){
         socket.broadcast.emit("create_conselho_seguranca", conselho);
     });
@@ -496,6 +497,52 @@ io.on("connection", (socket) => {
     socket.on("delete_conselho_seguranca", function (conselho){
         socket.broadcast.emit("delete_conselho_seguranca", conselho);
     });
+
+//Declarações
+    socket.on("create_declaracao", function (declaracao){
+        socket.broadcast.emit("create_declaracao", declaracao);
+    });
+    
+    socket.on("update_declaracao", function (declaracao){
+        socket.broadcast.emit("update_declaracao", declaracao);
+    });
+    
+    socket.on("delete_declaracao", function (declaracao){
+        socket.broadcast.emit("delete_declaracao", declaracao);
+    });
+
+//História
+    socket.on("create_historia", function (historia){
+        socket.broadcast.emit("create_historia", historia);
+    });
+
+    socket.on("update_historia", function (historia){
+        socket.broadcast.emit("update_historia", historia);
+    });
+
+    socket.on("delete_historia", function (historia){
+        socket.broadcast.emit("delete_historia", historia);
+    });
+
+//Zonas de Espetaculo
+    socket.on("create_zonaEspetaculo", function (zona){
+        socket.broadcast.emit("create_zonaEspetaculo", zona);
+    });
+
+    socket.on("update_zonaEspetaculo", function (zona){
+        socket.broadcast.emit("update_zonaEspetaculo", zona);
+    });
+
+    socket.on("delete_zonaEspetaculo", function (zona){
+        socket.broadcast.emit("delete_zonaEspetaculo", zona);
+    });
+
+//Provas
+    socket.on("update_prova", function (prova){
+        socket.broadcast.emit("update_prova", prova);
+    });
+
+
     
     //canais notificação
     socket.on("notify_app_users", function (obj, devices_list){
