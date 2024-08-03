@@ -214,13 +214,15 @@ function handler_classifications()
 				{
 				    classifications.value[rally.external_entity_id] = {value: new_class}
 				    console.log("broadcasting", "classifications")
-				    io.to(`rally_${rally.external_entity_id}`).emit("classifications", classifications.value[rally.external_entity_id].value);
 				}
                 })
                 .catch(error => {
                     console.error(error);
                 });
             }
+            rallyes.forEach((rally)=>{
+                io.to(`rally_${rally.external_entity_id}`).emit("classifications", classifications.value[rally.external_entity_id]?.value   );
+            })
             console.log("classifications", classifications.value)
 		}
 	});
