@@ -1,5 +1,5 @@
 //default config
-const api_url = "http://34.155.37.245/api/";
+const api_url = "http://172.232.62.193/api/";
 const httpServer = require("http").createServer();
 const { Server } = require("socket.io");
 const { GoogleAuth } = require('google-auth-library');
@@ -19,7 +19,7 @@ function getUserCount(room) {
 
 const KEYFILEPATH = 'service_account_file.json';
 const SCOPES = ['https://www.googleapis.com/auth/firebase.messaging'];
-const PROJECT_ID = 'camgapp-92f5e';
+const PROJECT_ID = 'camg-app';
 
 async function sendFCMMessage(tokens, not) {
     const auth = new GoogleAuth({
@@ -45,7 +45,7 @@ async function sendFCMMessage(tokens, not) {
                   }
                 }
         })}).then((response)=>{
-            console.log(tk.token, " token", response.status)  
+            console.log(tk.token, " token", response)
         })
               
     });
