@@ -1,5 +1,5 @@
 //default config
-const api_url = "http://172.232.62.193/api/";
+const api_url = "https://admin.camg.pt/api/";
 const httpServer = require("http").createServer();
 const { Server } = require("socket.io");
 const { GoogleAuth } = require('google-auth-library');
