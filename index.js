@@ -539,6 +539,20 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("delete_zonaEspetaculo", zona);
     });
 
+
+//Livestream
+socket.on("create_direto", function (direto){
+    socket.broadcast.emit("create_direto", direto);
+});
+
+socket.on("delete_direto", function (direto){
+    socket.broadcast.emit("delete_direto", direto);
+});
+
+socket.on("update_direto", function (direto){
+    socket.broadcast.emit("update_direto", direto);
+});
+
 //Provas
     socket.on("update_prova", function (prova){
         socket.broadcast.emit("update_prova", prova);
